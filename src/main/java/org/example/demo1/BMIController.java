@@ -138,8 +138,7 @@ private Label welcomeText;
             double heightCm = Double.parseDouble(tfHeight.getText());
             double bmi = BMICalculator.calculate(weight, heightCm);
             double height = heightCm / 100.0;
-            DecimalFormat df = new DecimalFormat("#0.00");
-            lblResult.setText(localizedStrings.getOrDefault("result", "Your BMI is") + " " + df.format(bmi));
+            lblResult.setText(localizedStrings.getOrDefault("result", "Your BMI is") + " " + BMICalculator.format(bmi));
 
             // Save to database
             String language = currentLocale.getLanguage();  // or store current locale
@@ -182,8 +181,7 @@ private Label welcomeText;
 
 
     private void applyTextDirection(Locale locale) {
-        String lang = locale.getLanguage();
-        boolean isRTL = lang.equals("fa") || lang.equals("ur") || lang.equals("ar") || lang.equals("he");
+        boolean isRTL = BMICalculator.isRtl(locale);
 
         Platform.runLater(() -> {
             if (rootVBox != null) {

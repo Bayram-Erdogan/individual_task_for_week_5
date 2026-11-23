@@ -113,6 +113,14 @@
                         </goals>
                     </execution>
                 </executions>
+                <configuration>
+                    <excludes>
+                        <exclude>org/example/demo1/BMIController.class</exclude>
+                        <exclude>org/example/demo1/BMIResultService.class</exclude>
+                        <exclude>org/example/demo1/LocalizationService.class</exclude>
+                        <exclude>org/example/demo1/HelloApplication.class</exclude>
+                    </excludes>
+                </configuration>
             </plugin>
 
             <!-- Shade Plugin to create an Uber JAR -->

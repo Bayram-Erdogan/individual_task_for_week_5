@@ -1,3 +1,4 @@
+
 pipeline {
     agent any
 
@@ -6,11 +7,9 @@ pipeline {
     }
 
     environment {
-        PATH = "C:\\Program Files\\Docker\\Docker\\resources\\bin;${env.PATH}"
-        JAVA_HOME = 'C:\\Program Files\\Java\\jdk-21'
         SONARQUBE_SERVER = 'SonarQubeServer'
-        DOCKERHUB_CREDENTIALS_ID = 'Docker_Hub'
-        DOCKERHUB_REPO = 'YOUR_DOCKERHUB_USER/bmi_test_3013'
+        DOCKERHUB_CREDENTIALS_ID = 'dockerhub-credentials'
+        DOCKERHUB_REPO = 'bayramerdogan/bmi_test_3013'
         DOCKER_IMAGE_TAG = 'latest'
     }
 
@@ -24,25 +23,26 @@ pipeline {
 
         stage('Build and Test') {
             steps {
-                bat 'mvn clean verify'
+                sh 'mvn clean verify'
             }
         }
 
         stage('SonarQube Analysis') {
             steps {
-                withCredentials([string(credentialsId: 'SONAR_TOKEN', variable: 'SONAR_TOKEN')]) {
-                    withSonarQubeEnv("${env.SONARQUBE_SERVER}") {
-                        bat '''
-                            sonar-scanner ^
-                            -Dsonar.projectKey=BMI_Cal ^
-                            -Dsonar.projectName=BMI_Cal ^
-                            -Dsonar.sources=src/main/java,src/main/resources ^
-                            -Dsonar.tests=src/test/java ^
-                            -Dsonar.java.binaries=target/classes ^
-                            -Dsonar.java.test.binaries=target/test-classes ^
-                            -Dsonar.coverage.jacoco.xmlReportPaths=target/site/jacoco/jacoco.xml ^
-                            -Dsonar.token=%SONAR_TOKEN%
-                        '''
+                script {
+                    def scannerHome = tool 'SonarScanner'
+
+                    withSonarQubeEnv("${SONARQUBE_SERVER}") {
+                        sh """
+                            ${scannerHome}/bin/sonar-scanner \
+                            -Dsonar.projectKey=bmi-test-project \
+                            -Dsonar.projectName='BMI Test Project' \
+                            -Dsonar.sources=src/main/java,src/main/resources \
+                            -Dsonar.tests=src/test/java \
+                            -Dsonar.java.binaries=target/classes \
+                            -Dsonar.java.test.binaries=target/test-classes \
+                            -Dsonar.coverage.jacoco.xmlReportPaths=target/site/jacoco/jacoco.xml
+                        """
                     }
                 }
             }
@@ -58,23 +58,28 @@ pipeline {
 
         stage('Build Docker Image') {
             steps {
-                script {
-                    def app = docker.build("${DOCKERHUB_REPO}:${DOCKER_IMAGE_TAG}")
-                    env.BUILT_IMAGE = app.id  // Optional: store image ID for reuse
-                }
+                sh 'docker build -t ${DOCKERHUB_REPO}:${DOCKER_IMAGE_TAG} .'
             }
         }
 
         stage('Push Docker Image to Docker Hub') {
             steps {
-                script {
-                    docker.withRegistry('https://index.docker.io/v1/', DOCKERHUB_CREDENTIALS_ID) {
-                       docker.image("${DOCKERHUB_REPO}:${DOCKER_IMAGE_TAG}").push()
-                    }
+                withCredentials([
+                    usernamePassword(
+                        credentialsId: "${DOCKERHUB_CREDENTIALS_ID}",
+                        usernameVariable: 'DOCKERHUB_USER',
+                        passwordVariable: 'DOCKERHUB_TOKEN'
+                    )
+                ]) {
+                    sh '''
+                        echo "$DOCKERHUB_TOKEN" | docker login \
+                            -u "$DOCKERHUB_USER" \
+                            --password-stdin
+                        docker push "$DOCKERHUB_REPO:$DOCKER_IMAGE_TAG"
+                        docker logout
+                    '''
                 }
             }
         }
     }
-
-
 }

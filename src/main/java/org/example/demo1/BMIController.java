@@ -135,8 +135,9 @@ private Label welcomeText;
         try {
             // ✅ use the active locale
             double weight = Double.parseDouble(tfWeight.getText());
-            double height = Double.parseDouble(tfHeight.getText()) / 100.0;
-            double bmi = weight / (height * height);
+            double heightCm = Double.parseDouble(tfHeight.getText());
+            double bmi = BMICalculator.calculate(weight, heightCm);
+            double height = heightCm / 100.0;
             DecimalFormat df = new DecimalFormat("#0.00");
             lblResult.setText(localizedStrings.getOrDefault("result", "Your BMI is") + " " + df.format(bmi));
 
@@ -144,7 +145,7 @@ private Label welcomeText;
             String language = currentLocale.getLanguage();  // or store current locale
             BMIResultService.saveResult(weight, height, bmi, language);
 
-        } catch (NumberFormatException e) {
+        } catch (IllegalArgumentException e) {
             lblResult.setText(localizedStrings.getOrDefault("invalid", "Invalid input"));
         }
     }

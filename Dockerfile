@@ -1,5 +1,6 @@
-# Use a known-good OpenJDK base image
-FROM eclipse-temurin:21-jdk
+# Force x86_64 because the JavaFX 21 Linux SDK and Maven artifacts used by this app
+# do not provide an ARM64 build.
+FROM --platform=linux/amd64 eclipse-temurin:21-jdk
 
 # Optional: set up display (for GUI forwarding, Windows/macOS + X server)
 ENV DISPLAY=host.docker.internal:0.0

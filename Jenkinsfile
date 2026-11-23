@@ -35,7 +35,7 @@ pipeline {
                     withSonarQubeEnv("${SONARQUBE_SERVER}") {
                         sh """
                             ${scannerHome}/bin/sonar-scanner \
-                            -Dsonar.projectKey=bmi-test-project \
+                            -Dsonar.projectKey=BMI-Test-Project \
                             -Dsonar.projectName='BMI Test Project' \
                             -Dsonar.sources=src/main/java,src/main/resources \
                             -Dsonar.tests=src/test/java \

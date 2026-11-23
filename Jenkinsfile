@@ -11,6 +11,7 @@ pipeline {
         DOCKERHUB_CREDENTIALS_ID = 'dockerhub-credentials'
         DOCKERHUB_REPO = 'bayramerdogan/bmi_test_3013'
         DOCKER_IMAGE_TAG = 'latest'
+        PATH = "/usr/local/bin:${env.PATH}"
     }
 
     stages {
